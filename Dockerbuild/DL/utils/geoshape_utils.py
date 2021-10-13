@@ -65,7 +65,7 @@ def pred2coco(masks, pred_clas, img_path, classes, out_dir):
     out_file.close()   
     
     
-def pred2shape(outputs, image_path, img, classes, JOBS, out_dir):
+def pred2shape(outputs, image_path, img, classes, JOBS, out_dir, i):
     masks = outputs['instances'].pred_masks.cpu().numpy()
     pred_clas = outputs['instances'].pred_classes.cpu().numpy().tolist()
     score = outputs['instances'].scores.cpu().numpy().tolist()
@@ -75,11 +75,17 @@ def pred2shape(outputs, image_path, img, classes, JOBS, out_dir):
     inf_df['Score']=score
     inf_df['Name']=pathlib.Path(image_path).name#.split('.')[0]
     aff = img.transform
-    dst_crs = img.crs.to_wkt()
+    src_crs = img.crs.to_wkt()
     img.close()
     pred2coco(masks, pred_clas, image_path, classes, out_dir)
     poly_list = parallel_funcs(masks, JOBS, mask2shape, aff)
-    gdf = gpd.GeoDataFrame(data=inf_df, geometry = poly_list, crs=dst_crs)
+    gdf = gpd.GeoDataFrame(data=inf_df, geometry = poly_list, crs=src_crs)
+    #if dst_crs != gdf.crs:
+    #    gdf.to_crs(dst_crs)
+    gdf.to_file(out_dir+'/gp_'+str(i)+'.gpkg', driver='GPKG', crs=src_crs)     
     return(gdf)#, poly_list)    
 
-
+def crs_validator(geoshapes, gdf):
+    if geoshapes.crs != gdf.crs:
+        reprj_gdf.to_crs(geoshapes.crs)
+    return(reprj_gdf)
