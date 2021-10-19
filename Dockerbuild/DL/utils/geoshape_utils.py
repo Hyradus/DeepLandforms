@@ -13,6 +13,7 @@ import shapely
 import shapely.geometry
 from skimage import measure
 import os
+
 def parallel_funcs(masks, JOBS, func, aff):
     from joblib import Parallel, delayed
     result = Parallel (n_jobs=JOBS)(delayed(func)(masks[i,:,:], aff)
@@ -82,7 +83,7 @@ def pred2shape(outputs, image_path, img, classes, JOBS, out_dir, i):
     gdf = gpd.GeoDataFrame(data=inf_df, geometry = poly_list, crs=src_crs)
     #if dst_crs != gdf.crs:
     #    gdf.to_crs(dst_crs)
-    gdf.to_file(out_dir+'/gp_'+str(i)+'.gpkg', driver='GPKG', crs=src_crs)     
+    #gdf.to_file(out_dir+'/gp_'+str(i)+'.gpkg', driver='GPKG', crs=src_crs)     
     return(gdf)#, poly_list)    
 
 def crs_validator(geoshapes, gdf):

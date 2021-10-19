@@ -19,7 +19,7 @@ class CustomPredictor:
     def __init__(self, cfg):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
-        self.model.eval().half()
+        self.model.eval()#.half()
         if len(cfg.DATASETS.TEST):
             self.metadata = MetadataCatalog.get(cfg.DATASETS.TEST[0])
 
@@ -44,12 +44,12 @@ class CustomPredictor:
                     om = om[:, :, ::-1]
                 height, width = om.shape[:2]
                 image = self.aug.get_transform(om).apply_image(om)
-                image = torch.as_tensor(image.astype("float16").transpose(2, 0, 1))
+                image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
                 inputs.append({"image": image, "height": height, "width": width})
 
-            with torch.cuda.amp.autocast():
-                predictions = self.model(inputs)
-                return predictions
+            #with torch.cuda.amp.autocast():
+            predictions = self.model(inputs)
+            return predictions
             
             
 class Trainer(DefaultTrainer):
