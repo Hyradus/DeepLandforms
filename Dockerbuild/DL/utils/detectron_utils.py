@@ -64,10 +64,12 @@ class Trainer(DefaultTrainer):
     def build_train_loader(cls, cfg):
         
         augs = [
-                T.RandomBrightness(0.9, 1.1),
-                T.RandomContrast(0.9,1.1),
-                T.RandomFlip(prob=0.5)
-        ]
+                T.ResizeShortestEdge([cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST),
+                T.RandomApply(T.RandomBrightness(0.9, 1.1),prob=0.25),
+                T.RandomApply(T.RandomContrast(0.9,1.1),prob=0.25),
+                T.RandomFlip(prob=0.25,horizontal=True),
+                T.RandomApply(T.RandomRotation([-180,180],expand=False),prob=0.25)
+                ]
         cmapper = DatasetMapper(cfg, is_train=True, augmentations=augs)
         return build_detection_train_loader(cfg, mapper=cmapper)
     
@@ -79,6 +81,6 @@ class Trainer(DefaultTrainer):
                 T.RandomContrast(0.9,1.1),
                 T.RandomFlip(prob=0.5)
         ]
-        cmapper = DatasetMapper(cfg, is_train=True, augmentations=augs)
+        cmapper = DatasetMapper(cfg, is_train=True)#, augmentations=augs)
         return build_detection_test_loader(cfg,dataset_name, mapper=cmapper)
             

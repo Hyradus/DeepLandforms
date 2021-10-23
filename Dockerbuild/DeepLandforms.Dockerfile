@@ -25,7 +25,7 @@ RUN apt update && apt install --no-install-recommends -y 	\
 
 FROM jupyter-base AS torch
 
-RUN pip3 --no-cache-dir install p torch==1.9.0+cu111 torchvision==0.10.0+cu111  -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 --no-cache-dir install p torch==1.10.0+cu113 torchvision==0.11.1+cu113  -f https://download.pytorch.org/whl/torch_stable.html
 
 FROM torch AS jupytorch
 RUN pip3 --no-cache-dir install 	\
