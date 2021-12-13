@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04
+ARG BASE_IMAGE=nvidia/cuda:11.3.0-cudnn8-runtime-ubuntu20.04
 FROM $BASE_IMAGE AS jupyter-base
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"
@@ -51,13 +51,18 @@ RUN python3.9 -m pip --no-cache-dir install 'git+https://github.com/facebookrese
 
 FROM detectron2 AS deeplandforms
 
+ARG UNAME=user
+ENV UNAME=$UNAME
 ARG UID=1000
 ARG GID=100
 ARG PASSWORD=123456
-RUN useradd -m -d /home/user -u $UID -g $GID -s /bin/bash user 		\
-    && echo "user:$PASSWORD" | chpasswd
+ENV PASSWORD=$PASSWORD
 
-WORKDIR /home/user
+RUN groupadd -g $GID -o $UNAME && \
+        useradd -m -d /home/$UNAME -u $UID -g $GID -s /bin/bash $UNAME && \
+        echo "$UNAME:$PASSWORD" | chpasswd
+
+WORKDIR /home/$UNAME
 
 #EXPOSE 8688
 

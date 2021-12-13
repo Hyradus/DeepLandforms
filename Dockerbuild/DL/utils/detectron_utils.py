@@ -19,7 +19,7 @@ class CustomPredictor:
     def __init__(self, cfg):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
-        self.model.eval()#.half()
+        self.model.eval().half()
         if len(cfg.DATASETS.TEST):
             self.metadata = MetadataCatalog.get(cfg.DATASETS.TEST[0])
 
@@ -34,7 +34,7 @@ class CustomPredictor:
         assert self.input_format in ["RGB", "BGR"], self.input_format
 
     def __call__(self, original_images):
-    
+
         with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
             # Apply pre-processing to image.
             inputs =[]
@@ -47,11 +47,11 @@ class CustomPredictor:
                 image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
                 inputs.append({"image": image, "height": height, "width": width})
 
-            #with torch.cuda.amp.autocast():
-            predictions = self.model(inputs)
-            return predictions
-            
-            
+            with torch.cuda.amp.autocast():
+                predictions = self.model(inputs)
+                return predictions
+
+
 class Trainer(DefaultTrainer):
     @classmethod
 
@@ -59,12 +59,12 @@ class Trainer(DefaultTrainer):
         if output_folder is None:
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
-  
+
     @classmethod
     def build_train_loader(cls, cfg):
-        
+
         augs = [
-                T.ResizeShortestEdge([cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST),
+                T.ResizeShortestEdge([cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MIN_SIZE_TRAIN], cfg.INPUT.MAX_SIZE_TRAIN),
                 T.RandomApply(T.RandomBrightness(0.9, 1.1),prob=0.25),
                 T.RandomApply(T.RandomContrast(0.9,1.1),prob=0.25),
                 T.RandomFlip(prob=0.25,horizontal=True),
@@ -72,15 +72,16 @@ class Trainer(DefaultTrainer):
                 ]
         cmapper = DatasetMapper(cfg, is_train=True, augmentations=augs)
         return build_detection_train_loader(cfg, mapper=cmapper)
-    
+
     @classmethod
     def build_test_loader(cls, cfg, dataset_name):
-        
+
         augs = [
-                T.RandomBrightness(0.9, 1.1),
-                T.RandomContrast(0.9,1.1),
-                T.RandomFlip(prob=0.5)
-        ]
-        cmapper = DatasetMapper(cfg, is_train=True)#, augmentations=augs)
+                T.ResizeShortestEdge([cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST),
+                T.RandomApply(T.RandomBrightness(0.9, 1.1),prob=0.25),
+                T.RandomApply(T.RandomContrast(0.9,1.1),prob=0.25),
+                T.RandomFlip(prob=0.25,horizontal=True),
+                T.RandomApply(T.RandomRotation([-180,180],expand=False),prob=0.25)
+                ]
+        cmapper = DatasetMapper(cfg, is_train=False, augmentations=augs)
         return build_detection_test_loader(cfg,dataset_name, mapper=cmapper)
-            

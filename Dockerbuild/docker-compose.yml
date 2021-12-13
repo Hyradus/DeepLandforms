@@ -1,5 +1,58 @@
 version: "3.8"
 services:
+     deeplandforms:
+        image: deeplandforms
+        init: true
+        build:
+            context: ./
+            dockerfile: DeepLandforms.Dockerfile
+            args:
+              - UID=${UID}
+              - GID=${GID}
+              - UNAME=${UNAME}
+              - PASSWORD=${PASSWORD}
+        user: ${UNAME}
+        ports:
+              - ${JUPYTER_PORT}:${JUPYTER_PORT}
+        volumes:
+              - ${DATA_DIR}:/home/user/data
+              - ./DL:/home/user/DeepLandforms
+              - ${MODEL_DIR}:/home/user/pre-trained_model
+        command:
+            [
+                "jupyter",
+                "lab",
+                "--ip=0.0.0.0",
+                "--no-browser",
+                "--port=${JUPYTER_PORT}",
+            ]
+        deploy:
+          resources:
+            reservations:
+              devices:
+              - driver: nvidia
+                count: all
+                capabilities: [gpu,utility,compute]
+
+     labelme:
+        image: labelme
+        build:
+            context: ./
+            dockerfile: labelme.Dockerfile
+            args:
+              - UID=${UID}
+              - GID=${GID}
+              - UNAME=${UNAME}
+              - PASSWORD=${PASSWORD}
+        user: ${UNAME}
+        environment:
+               - DISPLAY=${DISPLAY}
+        volumes:
+               - ${DATA_DIR}:/home/user/data
+               - /tmp/.X11-unix:/tmp/.X11-unix
+        command:
+            ["labelme"]
+
      tensorboard:
           image: tensorboard
           build:
@@ -12,52 +65,7 @@ services:
           command:
             [
                 "tensorboard",
-                "--logdir=${TENSORBOARD_DIR}",
+                "--logdir=/mnt/logdir",
                 "--port=${TENSORBOARD_PORT}",
                 "--host=0.0.0.0",
             ]
-
-     deeplandforms:
-        image: deeplandforms
-        init: true
-        build:
-            context: ./
-            dockerfile: DeepLandforms.Dockerfile
-
-        env_file: ./.env
-        user: user
-        ports:
-              - ${JUPYTER_PORT}:${JUPYTER_PORT}
-        volumes:
-              - ${DATA_DIR}:/home/user/data
-              - ${DL_DIR}:/home/user/DeepLandforms
-              - ${MODEL_DIR}:/home/user/pre-trained_model
-        command:
-            [
-                "jupyter",
-                "lab",
-                "--ip=0.0.0.0",
-                "--no-browser",
-                "--port=${JUPYTER_PORT}",
-#                "--notebook-dir=${JUPYTER_DIR}",
-            ]
-        deploy:
-          resources:
-            reservations:
-              devices:
-              - driver: nvidia
-                count: all
-                capabilities: [gpu,utility,compute]
-     labelme:
-        image: labelme
-        build:
-            context: ./
-            dockerfile: labelme.Dockerfile
-        user: user
-        environment:
-               - DISPLAY=${DISPLAY}
-        volumes:
-               - ${DATA_DIR}:/home/user/data
-               - /tmp/.X11-unix:/tmp/.X11-unix
-        command:
-            ["labelme"]

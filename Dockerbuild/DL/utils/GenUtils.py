@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Title: 
+Title:
 @author: @author: Giacomo Nodjoumi g.nodjoumi@jacobs-unversity.de
 
 
@@ -13,13 +13,27 @@ import os
 import shutil
 from datetime import datetime
 
+def dir_checker(directory):
+    try:
+        os.makedirs(directory)
+    except Exception as e:
+        print(e)
+        qst = directory + ' Folder exist, remove it? '
+        answ = question(qst,['yes','y','no','n'])
+        if answ in ['yes', 'y']:
+            shutil.rmtree(directory)
+            os.makedirs(directory)
+            print(directory, 'Folder created')
+        else:
+            pass
+
 
 def question(question, answers):
     answ = None
     while answ not in answers:
         print('Please enter only: ')
         print(*answers, sep=', ')
-        
+
         answ = input('\n'+question+'  Answer: ')
     return(answ)
 
@@ -115,7 +129,7 @@ def askFile(f):
         else:
             print(file, 'is not a valid path')
     return(file)
-            
+
 def askPath(p):
     ask = 'Insert path to ' + p
     while True:
