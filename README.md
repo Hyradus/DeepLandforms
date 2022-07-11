@@ -2,6 +2,7 @@
 
 Author: giacomo.nodjoumi@hyranet.info - g.nodjoumi@jacobs-university.de
 
+<<<<<<< HEAD
 Thise repository contains all the code to build and run *DeepLandforms* a novel toolset that provides all the necessary tools to train an instance segmentation model for landforms detections. Tools includes, data preparation, labeling, training, monitoring and inference.
 
 ## Workflow
@@ -31,6 +32,11 @@ Dockerized version of [wkentaro/labelme](https://github.com/wkentaro/labelme)
 Main Notebooks to perform training and inference on geo-referenced data.
 
 **DeepLandforms-Training Notebook**
+=======
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5734621.svg)](https://doi.org/10.5281/zenodo.5734621)
+
+## DeepLandforms Training
+>>>>>>> main
 
 With this notebook, users can train instance segmentation models on custom dataset of georeferenced images.
 The models are based on state-of-the-art general purpose architectures, available [here](https://github.com/facebookresearch/detectron2).
