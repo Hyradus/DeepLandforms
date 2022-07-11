@@ -28,8 +28,14 @@ from osgeo.gdal import gdalconst
 import pandas as pd
 from rio_cogeo.cogeo import cog_translate
 from rio_cogeo.profiles import cog_profiles
+from skimage.exposure import match_histograms
+from skimage import exposure
+from sklearn import preprocessing
+from skimage.filters import rank
+from skimage.morphology import ball
+from skimage import exposure
 
-def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog_cfg, bit, data_dict, dem, ixt):
+def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog_cfg, bit, data_dict, dem, ixt, overlap):
         # from datetime import datetime as dt
     # start = dt.now()
     src = rio.open(image)
@@ -60,7 +66,22 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
             y = math.floor(src_height/ht*ih)
             h = math.floor(src_height/ht)
             w = math.floor(src_width/vt)
+            if overlap != None:
+                x=round(x-x*overlap/100)
+                y=round(y-y*overlap/100)
 
+                h=round(h+h*overlap/100)
+
+                w=round(w+w*overlap/100)            
+                if ih+1 == ht:
+
+                    if (y+h)< src_height:
+                        h=src_height-y
+                if iw+1 == vt:
+                    if (x+w)< src_width:
+                        #print((x+w)<src_width)
+                        w=src_width-x
+                        #print(w)
             tile_win = Window(x,y,w,h)
             windows.append(tile_win)
             dst_trs = src.window_transform(tile_win)
@@ -123,8 +144,9 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
                 except Exception as e:
                     data_dict['Status']=e
                     pass
-                
+
             try:
+                
                 img = src.read(window=tile_src_win,
                                out_shape=(cnt, tile_height, tile_width),
                                resampling=Resampling.cubic,
@@ -133,14 +155,30 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
                 dt = img.dtype
                 if noData == None:
                     noData = 0
+                #img = exposure.equalize_adapthist(img, clip_limit=0.01)                   
                 if bit in ['yes','ye','y']:
-                    noData=0
+                    noData=0                
                     img = cv.convertScaleAbs(img,alpha=(255.0/img.max()))
                     dt = img.dtype
+               
+                #min_max_scaler = preprocessing.MinMaxScaler()#feature_range=(0,255))
+                #img = min_max_scaler.fit_transform(img[:,:,0])
+                #img = reshape_as_raster(img[:,:,np.newaxis])
+                #img = exposure.equalize_adapthist(img, clip_limit=1)    
+                
+                #if i==0:
+                #    img0=img.copy()
+                #else:
+                #    img=matched = match_histograms(img, img0, channel_axis=-1)
+
+                #mg = exposure.equalize_adapthist(reshape_as_image(image)[:,:,0], clip_limit=0.01)
+                #img = exposure.adjust_log(img)
+
+                
                 if dem.lower() in ['yes','ye','y']:
 
                     print('DEM cannot be 8bit')
-                    bit = 'n'          
+                    bit = 'n'
 
                 savename = savename+'.'+oxt
                 with rio.open(savename,'w',
@@ -154,30 +192,31 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
                           transform=tile_trs,
                           crs=crs) as dst:
                     dst.write(img)
-                del img
                 
+                del img
+
                 if cog in ['Yes','yes','Y','y']:
-                    print('cog')
+#                    print('cog')
                     try:
-                        
+
                         source = savename
                         #dest = savename.split('.'+ixt)[0]+'-cog.'+oxt
-                        dest = savename.split('.'+oxt)[0]+'-cog.'+oxt  
+                        dest = savename.split('.'+oxt)[0]+'-cog.'+oxt
 
                         _translate(source, dest,profile='JPEG', profile_options=cog_cfg)
                     except Exception as e:
                         print(e)
                         data_dict['Errors']=e
-            
+
                 data_dict['Status']='Done'
-                tmp_df = pd.DataFrame.from_dict([data_dict])   
-                
-                _ = gc.collect()                
+                tmp_df = pd.DataFrame.from_dict([data_dict])
+
+                _ = gc.collect()
                 data_dict['Status']='Done'
             except Exception as e:
                 print(e)
                 del img
-                _ = gc.collect()               
+                _ = gc.collect()
 
     data_dict['Status']='Done'
     tmp_df = pd.DataFrame.from_dict([data_dict])
@@ -214,7 +253,7 @@ def _translate(src_path, dst_path, profile="webp", profile_options={}, **options
     return True
 
 def cogCreator(savename, cog_cfg, nodata, otype):#, stats):
-    
+
     base_opts = f'-a_nodata {nodata} -mask none -ot {otype}'
     tmp_opts=base_opts
     final_opts=base_opts
@@ -239,7 +278,7 @@ def cogCreator(savename, cog_cfg, nodata, otype):#, stats):
     final_cog=gdal.Translate(final_cog, dst_tmp_cog, options=final_opts)#,scaleParams=[])
     final_cog = None
     os.remove(dst_tmp_cog)
-    
+
 
 
 def borderCropper(src, source_win,savename, oxt):

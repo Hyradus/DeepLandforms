@@ -44,6 +44,7 @@ RUN pip3 --no-cache-dir install 	\
                           psutil \
                           pygeos \
                           rasterio \
+                          rio-cogeo \
                           scikit-image \
                           scipy \
                           shapely \
@@ -55,4 +56,3 @@ ADD $PWD/IPU /home/jovyan/IPU
 RUN chown -R jovyan /home/jovyan/IPU
 USER jovyan
 WORKDIR /home/jovyan/
-

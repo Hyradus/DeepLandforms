@@ -47,19 +47,23 @@ def pred2coco(masks, pred_clas, img_path, classes, out_dir):
     }
     for i in range(len(masks)):
         msk = masks[i,:,:]
-        cnt_msk = measure.find_contours(msk, 0.8)
-        cnt_msk_flip = np.flip(cnt_msk[0], axis=1)
-        segment = cnt_msk_flip.tolist()
-        shape_mask = {
-        "label": classes[pred_clas[i]],
-        "points": segment,
-        "group_id": None,
-        "shape_type": "polygon",
-        "flags": {}
-        }
-        annotations["imageHeight"] = msk.shape[0]
-        annotations["imageWidth"] = msk.shape[1]
-        annotations['shapes'].append(shape_mask)
+        try:
+            cnt_msk = measure.find_contours(msk, 0.8)
+            cnt_msk_flip = np.flip(cnt_msk[0], axis=1)
+            segment = cnt_msk_flip.tolist()
+            shape_mask = {
+            "label": classes[pred_clas[i]],
+            "points": segment,
+            "group_id": None,
+            "shape_type": "polygon",
+            "flags": {}
+            }
+            annotations["imageHeight"] = msk.shape[0]
+            annotations["imageWidth"] = msk.shape[1]
+            annotations['shapes'].append(shape_mask)
+        except:
+            pass
+            
     json_name = out_dir+'/'+os.path.splitext(pathlib.Path(img_path).name)[0]+'.json'#.split('.')[0]+'.json'
     out_file = open(json_name, 'w')
     json.dump(annotations,out_file,indent=2)

@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=nvidia/cuda:11.3.0-cudnn8-runtime-ubuntu20.04
+ARG BASE_IMAGE=nvidia/cuda:11.6.0-runtime-ubuntu20.04
 FROM $BASE_IMAGE AS jupyter-base
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"
@@ -25,7 +25,8 @@ RUN apt update && apt install --no-install-recommends -y 	\
 
 FROM jupyter-base AS torch
 
-RUN pip3 --no-cache-dir install p torch==1.10.0+cu113 torchvision==0.11.1+cu113  -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 --no-cache-dir install torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+
 
 FROM torch AS jupytorch
 RUN pip3 --no-cache-dir install 	\

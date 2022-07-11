@@ -1,30 +1,29 @@
 version: "3.8"
 services:
+
      deeplandforms:
         image: deeplandforms
+        container_name: deeplandforms
         init: true
         build:
             context: ./
             dockerfile: DeepLandforms.Dockerfile
-            args:
-              - UID=${UID}
-              - GID=${GID}
-              - UNAME=${UNAME}
-              - PASSWORD=${PASSWORD}
-        user: ${UNAME}
+        shm_size: 8gb
+        env_file: ./.env
+        user: user
         ports:
-              - ${JUPYTER_PORT}:${JUPYTER_PORT}
+              - ${DL_JUPYTER_PORT}:${DL_JUPYTER_PORT}
         volumes:
               - ${DATA_DIR}:/home/user/data
-              - ./DL:/home/user/DeepLandforms
-              - ${MODEL_DIR}:/home/user/pre-trained_model
+              - ${DL_DIR}:/home/user/DeepLandforms
         command:
             [
                 "jupyter",
                 "lab",
                 "--ip=0.0.0.0",
                 "--no-browser",
-                "--port=${JUPYTER_PORT}",
+                "--port=${DL_JUPYTER_PORT}",
+#                "--notebook-dir=${JUPYTER_DIR}",
             ]
         deploy:
           resources:
@@ -33,18 +32,54 @@ services:
               - driver: nvidia
                 count: all
                 capabilities: [gpu,utility,compute]
+     tensorboard:
+          image: tensorboard
+          container_name: tensorboard
+          build:
+               context: ./
+               dockerfile: tensorboard.Dockerfile
+          ports:
+               - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
+          volumes:
+               - ${DATA_DIR}/train:/logdir
+          command:
+            [
+                "tensorboard",
+                "--logdir=/logdir",
+                "--port=${TENSORBOARD_PORT}",
+                "--host=0.0.0.0",
+            ]
+     ipu:
+        image: ipu
+        container_name: ipu
+        init: true
+        build:
+            context: ./
+            dockerfile: IPU.Dockerfile
+        env_file: ./.env
+        user: jovyan
+        ports:
+              - ${IPU_JUPYTER_PORT}:${IPU_JUPYTER_PORT}
+        volumes:
+              - ${IPU_DIR}:/home/jovyan/IPU
+              - ${DATA_DIR}:/home/jovyan/data
+        command:
+            [
+                "jupyter",
+                "lab",
+                "--ip=0.0.0.0",
+                "--no-browser",
+                "--port=${IPU_JUPYTER_PORT}",
+#                "--notebook-dir=${JUPYTER_DIR}",
+            ]
 
      labelme:
         image: labelme
+        container_name: labelme
         build:
             context: ./
             dockerfile: labelme.Dockerfile
-            args:
-              - UID=${UID}
-              - GID=${GID}
-              - UNAME=${UNAME}
-              - PASSWORD=${PASSWORD}
-        user: ${UNAME}
+        user: user
         environment:
                - DISPLAY=${DISPLAY}
         volumes:
@@ -52,20 +87,3 @@ services:
                - /tmp/.X11-unix:/tmp/.X11-unix
         command:
             ["labelme"]
-
-     tensorboard:
-          image: tensorboard
-          build:
-               context: ./
-               dockerfile: tensorboard.Dockerfile
-          ports:
-               - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
-          volumes:
-               - ${DATA_DIR}/train:/mnt/logdir
-          command:
-            [
-                "tensorboard",
-                "--logdir=/mnt/logdir",
-                "--port=${TENSORBOARD_PORT}",
-                "--host=0.0.0.0",
-            ]
