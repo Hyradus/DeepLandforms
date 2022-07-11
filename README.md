@@ -2,7 +2,6 @@
 
 Author: giacomo.nodjoumi@hyranet.info - g.nodjoumi@jacobs-university.de
 
-<<<<<<< HEAD
 Thise repository contains all the code to build and run *DeepLandforms* a novel toolset that provides all the necessary tools to train an instance segmentation model for landforms detections. Tools includes, data preparation, labeling, training, monitoring and inference.
 
 ## Workflow
