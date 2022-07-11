@@ -35,7 +35,6 @@ Main Notebooks to perform training and inference on geo-referenced data.
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5734621.svg)](https://doi.org/10.5281/zenodo.5734621)
 
 ## DeepLandforms Training
->>>>>>> main
 
 With this notebook, users can train instance segmentation models on custom dataset of georeferenced images.
 The models are based on state-of-the-art general purpose architectures, available [here](https://github.com/facebookresearch/detectron2).
