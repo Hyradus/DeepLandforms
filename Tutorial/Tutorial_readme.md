@@ -2,6 +2,24 @@
 
 Author: giacomo.nodjoumi@hyranet.info - g.nodjoumi@jacobs-university.de
 
+
+- [**DeepLandforms tutorial**](#--deeplandforms-tutorial--)
+  * [Workflow](#workflow)
+  * [Requirements](#requirements)
+  * [Installation](#installation)
+    + [ENV FILE](#env-file)
+    + [docker-compose](#docker-compose)
+    + [ImageProcessingUtils (IPU)](#imageprocessingutils--ipu-)
+    + [LabelMe](#labelme)
+    + [DeepLandforms-Training](#deeplandforms-training)
+    + [DeepLandforms-Inference](#deeplandforms-inference)
+    + [Tensorboard](#tensorboard)
+  * [Additional Scripts for Data Augmentation](#additional-scripts-for-data-augmentation)
+    + [LBL2GPKG](#lbl2gpkg)
+    + [lbl-replicator](#lbl-replicator)
+    + [JSONFILTER](#jsonfilter)
+
+________________________________________________________________________________________________
 ## Workflow
 
 <img src="../Readme/Figure-3-flowchart.png?raw=true" title="DeepLandforms workflow" width="1000"/>
@@ -164,3 +182,45 @@ cfg.SOLVER.AMP.ENABLED=True
 
 Go to ***localhost:TENSORBOARD_PORT***
 <img src="./Tutorial_images/tensorboard_interface.png" title="tensorboard" width="1000"/>
+
+## Additional Scripts for Data Augmentation
+
+### LBL2GPKG
+
+This scripts read the json file and image from a folder and extract each label from the image and save as separate file+json.
+It simply crop out all label contained in an image and saves into separate images + json label.
+Then save image name, class and shape (geometry) into a geodataframe.
+
+To run it, open through jupyter lab and edit:
+
+src_dir = local path to data (e.g., ../data/data)
+ssize = 0.5
+
+
+This script works only with the folder and file naming convention of IPU, later versions will be generalized.
+### lbl-replicator
+
+This script read the geopackage created by LBL2GPGK and using both file name and geometry field, extract the same labels from different versions of the same image. e.g., same image at different cell resolution
+
+This script works only with the folder and file naming convention of IPU, later versions will be generalized.
+
+
+To run it, open through jupyter lab and edit:
+
+src_dir = local path to src data (e.g., ../data/data)
+ssize = 0.5
+
+dst_dir = local path to dst data (images variant)
+dsize = 1
+
+### JSONFILTER
+
+This script read a folder containing image + labels and upon editing a list of valid and non-valid labels it filters in and out in two separated folders
+
+This script works only with the folder and file naming convention of IPU, later versions will be generalized.
+
+
+To run it, open through jupyter lab and edit:
+
+src_dir = local path to src data (e.g., ../data/data)
+valid_classes = [list of valid classes]
