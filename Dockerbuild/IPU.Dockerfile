@@ -31,6 +31,7 @@ RUN apt update && apt install --no-install-recommends -y 	\
 RUN pip3 --no-cache-dir install 	\
     git+https://${GITHUB_TOKEN}@github.com/Hyradus/maxrect.git \
     rio-cogeo \
+    && rm -rf /var/lib/apt/lists/* \
     && mamba install -c conda-forge -y \
                           fiona \
                           joblib \
@@ -48,7 +49,7 @@ RUN pip3 --no-cache-dir install 	\
                           shapely \
                           spectral \
                           tqdm \
-                          && rm -rf /var/lib/apt/lists/* \
+                          conda clean -a
 
 FROM base AS ipu
 ADD $PWD/Dockerfiles/IPU /home/jovyan/IPU
