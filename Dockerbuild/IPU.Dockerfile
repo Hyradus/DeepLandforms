@@ -49,10 +49,10 @@ RUN pip3 --no-cache-dir install 	\
                           shapely \
                           spectral \
                           tqdm \
-                          conda clean -a
+                          && conda clean -a
 
 FROM base AS ipu
-ADD $PWD/Dockerfiles/IPU /home/jovyan/IPU
+ADD $PWD/IPU /home/jovyan/IPU
 RUN chown -R jovyan /home/jovyan/IPU
 
 WORKDIR /home/jovyan/
