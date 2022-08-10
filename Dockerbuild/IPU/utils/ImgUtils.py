@@ -195,18 +195,16 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
                 
                 del img
 
-                if cog in ['Yes','yes','Y','y']:
-#                    print('cog')
-                    try:
-
-                        source = savename
-                        #dest = savename.split('.'+ixt)[0]+'-cog.'+oxt
-                        dest = savename.split('.'+oxt)[0]+'-cog.'+oxt
-
-                        _translate(source, dest,profile='JPEG', profile_options=cog_cfg)
-                    except Exception as e:
-                        print(e)
-                        data_dict['Errors']=e
+                if cog in ['Yes','yes','Y','y']:                           
+                    dest = savename.split('.'+oxt)[0]+'-cog.'+oxt  
+                    try:                        
+                        _translate(savename, dest,profile='DEFLATE', profile_options=cog_cfg)                        
+                    except Exception as e:                                              
+                        try:
+                            _translate(image, dest,profile='DEFLATE', profile_options=cog_cfg)
+                        except:
+                            data_dict['Errors']=e
+                            print(e)
 
                 data_dict['Status']='Done'
                 tmp_df = pd.DataFrame.from_dict([data_dict])
@@ -226,7 +224,7 @@ def gdalWriter(driverName, src, shape, dst_name,transform, srs):
     driver=gdal.GetDriverByName(driverName)
     rows, cols, bands = shape
 
-def _translate(src_path, dst_path, profile="webp", profile_options={}, **options):
+def _translate(src_path, dst_path, profile="DEFLATE", profile_options={}, **options):
     #source: https://github.com/cogeotiff/rio-cogeo
     """Convert image to COG."""
     # Format creation option (see gdalwarp `-co` option)
@@ -235,17 +233,17 @@ def _translate(src_path, dst_path, profile="webp", profile_options={}, **options
     output_profile.update(profile_options)
 
     # Dataset Open option (see gdalwarp `-oo` option)
-    config = dict(
-        GDAL_NUM_THREADS="ALL_CPUS",
-        GDAL_TIFF_INTERNAL_MASK=True,
-        GDAL_TIFF_OVR_BLOCKSIZE="128",
-    )
+#    config = dict(
+#        GDAL_NUM_THREADS="ALL_CPUS",
+#        #GDAL_TIFF_INTERNAL_MASK=True,
+#        #GDAL_TIFF_OVR_BLOCKSIZE="128",
+#    )
 
     cog_translate(
         src_path,
         dst_path,
         output_profile,
-        config=config,
+        #config=config,
         in_memory=False,
         quiet=True,
         **options,
