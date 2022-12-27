@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ubuntu:20.04
+ARG BASE_IMAGE=ubuntu:22.04
 FROM $BASE_IMAGE AS base
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"
@@ -14,7 +14,11 @@ RUN                                           \
 	python3-pyqt5                             \
 	pyqt5-dev-tools                           \
 	qttools5-dev-tools                     && \
-    pip3 --no-cache-dir install setuptools wheel PyQt5 labelme && \
+    pip3 --no-cache-dir install setuptools 		\
+								wheel	   		\
+								opencv-python-headless 	\
+								pyqt5			\
+								labelme 	 && \
     apt-get install --no-install-recommends -y \
   	qt5-image-formats-plugins                && \
     rm -rf /var/lib/apt/lists/*

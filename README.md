@@ -64,5 +64,26 @@ See [here](https://www.tensorflow.org/tensorboard)
 
 See the tutorial folder.
 
+## Troubleshooting
+
+### Labelme 
+
+
+#### Labelme not starting due to missing display
+The solution is to run the following command:
+```
+xhost +local:docker 
+```
+and then again build the container:
+```
+docker-compose up --build
+```
+
+## To-DO
+
+* [ ] Remove nvidia-docker strict requirement
+* [ ] Remove Detectron2 and make it optional
+* [ ] Implement additional architectures (e.g. U-Net, YOLO)
+
 ## Funding
 *This study is within the Europlanet 2024 RI and EXPLORE project, and it has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871149 and No 101004214.*

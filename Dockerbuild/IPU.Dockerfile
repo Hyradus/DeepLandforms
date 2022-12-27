@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=jupyter/base-notebook
+ARG BASE_IMAGE=jupyter/base-notebook:python-3.9.12
 FROM $BASE_IMAGE AS base
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"

@@ -32,6 +32,7 @@ services:
               - driver: nvidia
                 count: all
                 capabilities: [gpu,utility,compute]
+
      tensorboard:
           image: tensorboard
           container_name: tensorboard
@@ -41,11 +42,11 @@ services:
           ports:
                - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
           volumes:
-               - ${DATA_DIR}/train:/logdir
+               - ${DATA_DIR}/:/data
           command:
             [
                 "tensorboard",
-                "--logdir=/logdir",
+                "--logdir=/data/train/logdir",
                 "--port=${TENSORBOARD_PORT}",
                 "--host=0.0.0.0",
             ]
@@ -77,13 +78,15 @@ services:
         image: labelme
         container_name: labelme
         build:
-            context: ./
-            dockerfile: labelme.Dockerfile
+             context: ./
+             dockerfile: labelme.Dockerfile
         user: user
         environment:
                - DISPLAY=${DISPLAY}
         volumes:
                - ${DATA_DIR}:/home/user/data
                - /tmp/.X11-unix:/tmp/.X11-unix
+               - ~/.Xauthority:/home/user/.Xauthority
+        network_mode: "host"
         command:
             ["labelme"]

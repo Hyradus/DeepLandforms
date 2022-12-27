@@ -69,6 +69,28 @@ def pred2coco(masks, pred_clas, img_path, classes, out_dir):
     json.dump(annotations,out_file,indent=2)
     out_file.close()   
     
+def pred2shapeWin(outputs, l, image_path, aff, src_crs, classes, JOBS, out_dir, i):
+    masks = outputs['instances'].pred_masks.cpu().numpy()
+    pred_clas = outputs['instances'].pred_classes.cpu().numpy().tolist()
+    score = outputs['instances'].scores.cpu().numpy().tolist()
+    cols = ['Name','Class','Score']#, 'lon','lat']
+    inf_df =pd.DataFrame(columns=cols)
+    inf_df['Class']=[classes[i] for i in pred_clas]
+    inf_df['Score']=score
+    inf_df['Name']=pathlib.Path(image_path).name.split('.')[0]+'_{l}.tiff'
+    #aff = img.transform
+    #src_crs = img.crs.to_wkt()
+    src_crs = src_crs.to_wkt()
+    #img.close()
+    pred2coco(masks, pred_clas, image_path, classes, out_dir)
+    poly_list = parallel_funcs(masks, JOBS, mask2shape, aff)
+    gdf = gpd.GeoDataFrame(data=inf_df, geometry = poly_list, crs=src_crs)
+    #if dst_crs != gdf.crs:
+    #    gdf.to_crs(dst_crs)
+    #gdf.to_file(out_dir+'/gp_'+str(i)+'.gpkg', driver='GPKG', crs=src_crs)     
+    return(gdf)#, poly_list)    
+
+    
     
 def pred2shape(outputs, image_path, img, classes, JOBS, out_dir, i):
     masks = outputs['instances'].pred_masks.cpu().numpy()

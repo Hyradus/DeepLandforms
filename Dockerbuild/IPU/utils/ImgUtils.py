@@ -103,7 +103,7 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
             tile_height = tile_src_win.height
             tile_width = tile_src_win.width
 
-            if bc in ['y','y']:
+            if bc in ['y','Y']:
                 try:
                     tile_width, tile_height, temp_win, tile_trs, savename =  borderCropper(src,
                                                                                         tile_src_win,
@@ -119,7 +119,7 @@ def geoslicer(image, max_dim, savename, bc, sqcrp, res, cell_size, oxt, cog, cog
                 except Exception as e:
 
                     data_dict['Status']=e
-                    pass
+                    break
 
             if sqcrp in ['Y','y']:
 
@@ -334,6 +334,7 @@ def maxRectContourCrop(img_crop):
     contours, hierarchy = cv.findContours(bins, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     from maxrect import get_intersection, get_maximal_rectangle
     coords = coordFinder(contours, img_crop)
+    #coords = [[int(cc[0]),int(cc[1])]for cc in coords]
     _, coordinates = get_intersection([coords])
     coo = list(coordinates)
     ll, ur = get_maximal_rectangle(coo)

@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=nvidia/cuda:11.7.0-runtime-ubuntu20.04
+ARG BASE_IMAGE=nvidia/cuda:11.7.0-runtime-ubuntu22.04
 FROM $BASE_IMAGE AS jupyter-base
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"
@@ -12,11 +12,11 @@ RUN apt update && apt install --no-install-recommends -y 	\
     curl 							\
     libgl1-mesa-dev 				\
     libglib2.0-0 					\
-    python3.9-dev 					\
-    python3.9-distutils 			&& \
+    python3.10-dev 					\
+    python3.10-distutils 			&& \
     rm -rf /var/lib/apt/lists/*	    && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-	python3.9 get-pip.py 									&& \
+	python3.10 get-pip.py 									&& \
 	pip3 -q install pip --upgrade  && \
     pip3 --no-cache-dir install 	\
 	setuptools 						\
@@ -27,7 +27,7 @@ FROM jupyter-base AS torch
 
 #RUN pip3 --no-cache-dir install torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
-RUN pip3 --no-cache-dir install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+RUN pip3 --no-cache-dir install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117
 
 
 #RUN python3.9 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
@@ -49,13 +49,13 @@ RUN pip3 --no-cache-dir install 	\
 	scikit-image				\
 	scikit-learn				\
 	scipy 							\
-	tqdm							  \
-    && rm -rf /var/lib/apt/lists/*
+	tqdm
 
 FROM jupytorch AS detectron2
 
-RUN python3.9 -m pip --no-cache-dir install 'git+https://github.com/facebookresearch/detectron2.git' \
-                                            'git+https://github.com/facebookresearch/detectron2.git'
+RUN python3.10 -m pip --no-cache-dir install 'git+https://github.com/facebookresearch/detectron2.git' \
+                                            'git+https://github.com/facebookresearch/detectron2.git' \                                            
+                                              && rm -rf /var/lib/apt/lists/*
 
 FROM detectron2 AS deeplandforms
 

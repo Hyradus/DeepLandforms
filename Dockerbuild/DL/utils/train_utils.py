@@ -73,11 +73,27 @@ def dsReg(data_path, ds_name, dataset_dir):
     meta.set(thing_colors=colors)
     return (dataset, meta, classes)
 
-def data_split(dataset, valid, test):
-    train, valid = train_test_split(dataset, test_size=valid, random_state=1,shuffle=True)
-    valid, test = train_test_split(valid, test_size=test, random_state=1,shuffle=True)
-    #test=None
-    return(train, valid, test)
+#def data_split(dataset, valid, test):
+#    train_set, valid_set = train_test_split(dataset, test_size=valid, random_state=1,shuffle=False)
+#    train_set, test_set = train_test_split(train_set, test_size=test, random_state=1,shuffle=False)
+#    #test=None
+#    return(train_set, valid_set, test_set)
+
+def data_split(dataset, val, tst):
+    val_perc = (val+tst)/100
+    train_set, valid_set = train_test_split(dataset, test_size=val_perc, random_state=1,shuffle=False)
+    test_len = len(dataset)*tst/100
+    test_perc = test_len/len(valid_set)
+    valid_set, test_set = train_test_split(valid_set, test_size=test_perc, random_state=1,shuffle=False)
+    #print(f'{len(valid_set)}, {len(test_set)}')
+
+
+    
+    
+ #   train_set, valid_set = train_test_split(dataset, test_size=val, random_state=1,shuffle=False)
+ #   valid_set, test_set = train_test_split(valid_set, test_size=test_perc, random_state=1,shuffle=False)
+#    #test=None
+    return(train_set, valid_set, test_set)
 
 def categories_gen(dataset):
     categories = []
