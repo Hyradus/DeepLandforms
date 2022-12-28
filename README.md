@@ -85,5 +85,28 @@ docker-compose up --build
 * [ ] Remove Detectron2 and make it optional
 * [ ] Implement additional architectures (e.g. U-Net, YOLO)
 
+## How to Cite
+
+### Plain-text
+Nodjoumi, G., Pozzobon, R., Sauro, F., & Rossi, A. P. (2022). DeepLandforms: A Deep Learning Computer Vision toolset applied to a prime use case for mapping planetary skylights. Earth and Space Science, 10, e2022EA002278. https://doi.org/10.1029/2022EA002278
+
+### BibTex
+@article{https://doi.org/10.1029/2022EA002278,
+author = {Nodjoumi, Giacomo and Pozzobon, Riccardo and Sauro, Francesco and Rossi, Angelo Pio},
+title = {DeepLandforms: A Deep Learning Computer Vision toolset applied to a prime use case for mapping planetary skylights},
+journal = {Earth and Space Science},
+volume = {n/a},
+number = {n/a},
+pages = {e2022EA002278},
+keywords = {Mapping, Mars, Pits, Skylight, Deep Learning, Toolset},
+doi = {https://doi.org/10.1029/2022EA002278},
+url = {https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2022EA002278},
+eprint = {https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2022EA002278},
+note = {e2022EA002278 2022EA002278},
+abstract = {Abstract Thematic map creation is a meticulous process that requires several steps to be accomplished regardless of the type of map to be produced, from data collection, through data exploitation and map publication in print, image, and GIS format. Examples are geolithological, and geomorphological maps in which most of the highest time-consuming tasks are those related to the discretization of single objects. Introducing also interpretative biases because of the different experience of the mappers in identifying a set of unique characteristics that describe those objects. In this setting, Deep Learning Computer Vision techniques could play a key role but lack the availability of a complete set of tools specific for planetary mapping. The aim of this work is to develop a comprehensive set of ready-to-use tools for landforms mapping based on validated Deep Learning methodologies and open-source libraries. We present DeepLandforms, the first pre-release of a toolset for landform mapping using Deep Learning that includes all the components for dataset preparation, model training, monitoring, and inference. In DeepLandforms, users have full access to the workflow and control over all the processes involved, granting complete control and customization capabilities. In order to validate the applicability of our tool, in this work we present the results achieved using DeepLandforms in the science case of mapping sinkhole-like landforms on Mars, as a first example that can lead us into multiple and diverse future applications.}
+}
+
+
+
 ## Funding
 *This study is within the Europlanet 2024 RI and EXPLORE project, and it has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871149 and No 101004214.*
