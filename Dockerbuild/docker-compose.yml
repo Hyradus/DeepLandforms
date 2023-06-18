@@ -39,11 +39,7 @@ services:
                 count: all
                 capabilities: [gpu,utility,compute]
 
-<<<<<<< HEAD
-     tensorboard:
-=======
     tensorboard:
->>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
           image: tensorboard
           container_name: tensorboard
           build:
