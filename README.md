@@ -96,11 +96,8 @@ See [here](https://www.tensorflow.org/tensorboard)
 
 See the tutorial folder.
 
-<<<<<<< HEAD
-=======
 Needs to be updated.
 
->>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
 ## Troubleshooting
 
 ### Labelme 
@@ -118,18 +115,12 @@ docker-compose up --build
 
 ## To-DO
 
-<<<<<<< HEAD
-* [ ] Remove nvidia-docker strict requirement
-* [ ] Remove Detectron2 and make it optional
-* [ ] Implement additional architectures (e.g. U-Net, YOLO)
-=======
 * [ ] Update tutorial
 * [ ] Remove nvidia-docker strict requirement
 * [X] Remove Detectron2 and make it optional 
 * [X] Implement additional architectures (e.g. U-Net, YOLO)
 * [X] Implement Segment-Anything stage
 * [ ] Deploy Segment-Anything stage
->>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
 
 ## How to Cite
 
