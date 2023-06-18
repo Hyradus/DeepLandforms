@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 ARG BASE_IMAGE=nvidia/cuda:11.7.0-runtime-ubuntu22.04
 FROM $BASE_IMAGE AS jupyter-base
+=======
+
+FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
 
 MAINTAINER "Giacomo Nodjoumi <giacomo.nodjoumi@hyranet.info>"
 
@@ -11,12 +16,17 @@ RUN apt update && apt install --no-install-recommends -y 	\
     build-essential 				\
     curl 							\
     libgl1-mesa-dev 				\
+<<<<<<< HEAD
     libglib2.0-0 					\
+=======
+    libglib2.0-0 					\    
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
     python3.10-dev 					\
     python3.10-distutils 			&& \
     rm -rf /var/lib/apt/lists/*	    && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 	python3.10 get-pip.py 									&& \
+<<<<<<< HEAD
 	pip3 -q install pip --upgrade  && \
     pip3 --no-cache-dir install 	\
 	setuptools 						\
@@ -58,20 +68,29 @@ RUN python3.10 -m pip --no-cache-dir install 'git+https://github.com/facebookres
                                               && rm -rf /var/lib/apt/lists/*
 
 FROM detectron2 AS deeplandforms
+=======
+	pip3 -q install pip --upgrade  \	
+	&& rm -rf /var/lib/apt/lists/*
 
+
+
+COPY ./requirements.txt /
+WORKDIR /
+RUN pip3 --no-cache-dir install -r requirements.txt
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
+
+ARG LABPORT=8688
 ARG UNAME=user
-ENV UNAME=$UNAME
 ARG UID=1000
 ARG GID=100
-ARG PASSWORD=123456
-ENV PASSWORD=$PASSWORD
+ENV PASSWORD=123456
 
 RUN groupadd -g $GID -o $UNAME && \
         useradd -m -d /home/$UNAME -u $UID -g $GID -s /bin/bash $UNAME && \
         echo "$UNAME:$PASSWORD" | chpasswd
+ WORKDIR /home/$UNAME
 
-WORKDIR /home/$UNAME
-
+USER $UNAME
+RUN echo "$UNAME"
 #EXPOSE 8688
-
-#CMD ["jupyter","lab", "--port=8688","--no-browser", "--ip=0.0.0.0"]
+#ENTRYPOINT ["jupyter","lab", "--port=${PORT}","--no-browser", "--ip=0.0.0.0"]

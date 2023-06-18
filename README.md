@@ -29,7 +29,39 @@ Dockerized version of [wkentaro/labelme](https://github.com/wkentaro/labelme)
 
 ### DeepLandforms
 Main Notebooks to perform training and inference on geo-referenced data.
+DeepLandforms now two separate main folders
 
+Detectron2 has been removed from default packages.
+
+New defaut available packages:
+* [ultralytics](https://github.com/ultralytics/ultralytics)
+* [SAHI](https://github.com/obss/sahi)
+* [super-gradients](https://github.com/Deci-AI/super-gradients)
+* [segment-geospatial](https://github.com/opengeos/segment-geospatial)
+
+#### Ultralytics - YOLOv8
+___________________________________________________________
+
+Jocher, G., Chaurasia, A., & Qiu, J. (2023). YOLO by Ultralytics (Version 8.0.0) [Computer software]. https://github.com/ultralytics/ultralytics
+
+**DeepLandforms-Training-YOLOv8.ipynb**
+
+With this notebook, users can train object detection and instance segmentation models on custom dataset of georeferenced images.
+The models are based on state-of-the-art general purpose architectures, available [here](https://github.com/ultralytics/ultralytics).
+
+**DeepLandforms-Inference-YOLOv8.ipynb**
+
+With this notebook, users can use custom [YOLOv8](https://github.com/ultralytics/ultralytics) trained models for object detection and instance segmentation models on custom dataset of georeferenced images.
+Results can be visualized directly in the noteboo using leafmap and WMS backend.
+
+The output consist of a folder containing:
+* Crop of the detections (georeferenced)
+* Label file in YOLO txt format for object detection
+* Geopackage containing a single layer with image name, confidence leve, class.
+
+
+#### Detectron2
+___________________________________________________________
 **DeepLandforms-Training Notebook**
 
 With this notebook, users can train instance segmentation models on custom dataset of georeferenced images.
@@ -52,7 +84,7 @@ See [here](https://www.tensorflow.org/tensorboard)
 
 ## Requirements
 
-* 25 GB of free disk space
+* 15 GB of free disk space
 * Ubuntu OS or other distro
 * Docker
 * Nvidia-docker
@@ -64,6 +96,11 @@ See [here](https://www.tensorflow.org/tensorboard)
 
 See the tutorial folder.
 
+<<<<<<< HEAD
+=======
+Needs to be updated.
+
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
 ## Troubleshooting
 
 ### Labelme 
@@ -81,9 +118,18 @@ docker-compose up --build
 
 ## To-DO
 
+<<<<<<< HEAD
 * [ ] Remove nvidia-docker strict requirement
 * [ ] Remove Detectron2 and make it optional
 * [ ] Implement additional architectures (e.g. U-Net, YOLO)
+=======
+* [ ] Update tutorial
+* [ ] Remove nvidia-docker strict requirement
+* [X] Remove Detectron2 and make it optional 
+* [X] Implement additional architectures (e.g. U-Net, YOLO)
+* [X] Implement Segment-Anything stage
+* [ ] Deploy Segment-Anything stage
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
 
 ## How to Cite
 

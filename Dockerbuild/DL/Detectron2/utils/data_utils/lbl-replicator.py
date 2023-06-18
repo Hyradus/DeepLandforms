@@ -17,7 +17,7 @@ Created on Fri Oct 15 15:25:46 2021
 
 import os
 import rasterio as rio
-from utils.GenUtils import get_paths
+
 from shapely.geometry import box
 import geopandas as gpd
 import pandas as pd
@@ -28,6 +28,14 @@ import shapely.geometry as geometry
 from osgeo import gdal
 
 
+def get_paths(PATH, ixt):
+    import re
+    import fnmatch
+    #os.chdir(PATH)
+    ext='*.'+ixt
+    chkCase = re.compile(fnmatch.translate(ext), re.IGNORECASE)
+    files = [f for f in os.listdir(PATH) if chkCase.match(f)]
+    return(files)
 
 def bounding_box(points):
     x_coordinates, y_coordinates = zip(*points)
@@ -35,39 +43,63 @@ def bounding_box(points):
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
 
 
+def limitcalc(bb_min, bb_max, y_diff, x_diff, src_img):
+    x_min_new = bb_min[0] - int(y_diff//2)
+    if x_min_new <0:
+        x_min_new = 0
+    y_min_new = bb_min[1] - int(x_diff//2)
+    if y_min_new <0:
+        y_min_new = 0
+    x_max_new = bb_max[0] + int(y_diff//2)
+    if x_max_new > src_img.width:
+        x_max_new = src_img.width
+    y_max_new = bb_max[1] + int(x_diff//2)
+    if y_max_new > src_img.height:
+        y_max_new = src_img.height
+    return(x_min_new, y_min_new, x_max_new, y_max_new)
 
-def window_calc(bb, src_img, sq):
+# def window_calc(bb, src_img, sq):
+#     col_off = math.floor(bb[0][0])#-50)
+#     row_off = math.floor(bb[0][1])#-50)
+#     # if col_off < 0:
+#     #     col_off = 0
+#     # if row_off < 0:
+#     #     row_off = 0
+        
+#     width = math.ceil(bb[1][0]-col_off)#+50)
+#     height = math.ceil(bb[1][1]-row_off)#+50)
+#     # if width > src_img.width:
+#     #     width = src_img.width
+#     # if height > src_img.height:
+#     #     height = src_img.height
+#     # if sq.lower() in ['y','yes']:
+#     center_x = width//2
+#     center_y = height//2
+#     diff = abs(width-height)
+#     if width <= height:
+#         x= width
+#         y=height-diff
+    
+#     elif width > height:
+#         x=width-diff
+#         y=height
+#     top_edge = center_y - y//2+row_off
+#     left_edge = center_x - x//2 +col_off
+#     right_edge = center_x +x//2 +col_off
+#     size = right_edge -left_edge
+#     size = int(size)
+#     Win = Window(left_edge,top_edge,size,size)
+#     # Win = Window(col_off,row_off,width, height)
+#     return(Win)
+
+def window_calc(bb, src_img):
     col_off = math.floor(bb[0][0])#-50)
     row_off = math.floor(bb[0][1])#-50)
-    # if col_off < 0:
-    #     col_off = 0
-    # if row_off < 0:
-    #     row_off = 0
-        
+
     width = math.ceil(bb[1][0]-col_off)#+50)
     height = math.ceil(bb[1][1]-row_off)#+50)
-    # if width > src_img.width:
-    #     width = src_img.width
-    # if height > src_img.height:
-    #     height = src_img.height
-    # if sq.lower() in ['y','yes']:
-    center_x = width//2
-    center_y = height//2
-    diff = abs(width-height)
-    if width <= height:
-        x= width
-        y=height-diff
-    
-    elif width > height:
-        x=width-diff
-        y=height
-    top_edge = center_y - y//2+row_off
-    left_edge = center_x - x//2 +col_off
-    right_edge = center_x +x//2 +col_off
-    size = right_edge -left_edge
-    size = int(size)
-    Win = Window(left_edge,top_edge,size,size)
-    # Win = Window(col_off,row_off,width, height)
+
+    Win = Window(col_off,row_off,width, height)
     return(Win)
 
 def bb_cal(src_img, bb_min, bb_max,mm):
@@ -100,19 +132,19 @@ def bb_cal(src_img, bb_min, bb_max,mm):
 # PATH = "/mnt/DATA/Working/BC_n_SQCRP_n_CellSize_10_m__LIM_n_None_px_cog_n/"
 # BASE_PATH = '/mnt/NAS/OrbitalData/Mars/HiRISE/OriginalforPITS/BC_n_SQCRP_n_CellSize_5_m__LIM_n_None_px_cog_n/'
 # PATH = BASE_PATH+'src_5m/'
-# PATH = '/mnt/NAS/OrbitalData/Mars/HiRISE/OriginalforPITS/BC_n_SQCRP_n_CellSize_5_m__LIM_n_None_px_cog_n'
-PATH = '/media/gnodj/W-DATS/2022/WorkingDataset/MarsPIT/BC_n_SQCRP_n_CellSize_2_m__LIM_n_None_px_cog_n/'
+#PATH = '/mnt/NAS/OrbitalData/Mars/HiRISE/OriginalforPITS/BC_n_SQCRP_n_CellSize_0-5_m__LIM_n_None_px_cog_n/'
+PATH = '/mnt/NAS/OrbitalData/Mars/HiRISE/OriginalforPITS/BC_n_SQCRP_n_CellSize_2_m__LIM_n_None_px_cog_n/'
 # PATH = '/mnt/NAS/OrbitalData/Mars/HiRISE/OriginalforPITS/BC_n_SQCRP_n_CellSize_2_m__LIM_n_None_px_cog_n'
 dst_dir_name = PATH+'/extracted/'
 dst_dir = os.makedirs(dst_dir_name, exist_ok=True)
-dsize= 2
+dsize= 2.0
 
-start_path='/media/gnodj/S-DATS/SHARE-WS/Mars/HiRiSE/MARSPIT/V2/extracted-05/'
-ssize= 0.5
+start_path='/mnt/W-DATS/2022/WorkingDataset/MarsPIT/BC_n_SQCRP_n_CellSize_10_m__LIM_n_None_px_cog_n_V2/'
+ssize= 10.0
 
 
-src_gpkg = 'labeled_shapes_crs.gpkg'
-src_gdf = gpd.read_file(start_path+src_gpkg)
+src_gpkg = '/mnt/W-DATS/2022/WorkingDataset/MarsPIT/BC_n_SQCRP_n_CellSize_10_m__LIM_n_None_px_cog_n_V2/labeled_shapes.gpkg'
+src_gdf = gpd.read_file(src_gpkg)
 
 
 paths = get_paths(start_path, 'json')
@@ -130,7 +162,7 @@ for i in range(len(paths)):
         # print(base_name, suffix)
         #src_name = base_name.split('10')[0]
         # img_src_file = f'{PATH}/{base_name}{dsize}m.tiff'
-        img_src_file = f'{PATH}/{base_name}{dsize}.0m.tiff'
+        img_src_file = f'{PATH}/{base_name}{dsize}m.tiff'
         
         src_img = rio.open(img_src_file)
         layer = gdal.Open(img_src_file)
@@ -162,51 +194,73 @@ for i in range(len(paths)):
         
     
         
+        # points = shape['points']
+
         bb = bounding_box(points)
         bb_min = bb[0]
         bb_max = bb[1]
         
-        # x_min = bb_min[0]
-        # y_min = bb_min[1]
-        # x_max = bb_max[0]
-        # y_max = bb_max[1]
+        x_min = bb_min[0]
+        y_min = bb_min[1]
+        x_max = bb_max[0]
+        y_max = bb_max[1]
         
-        # x_diff = (x_max-x_min)
-        # y_diff = (y_max-y_min)
-        
-        # x_min_new = bb_min[0]# - int(y_diff//2)
-        # if x_min_new <0:
-        #     x_min_new = 0
-        # y_min_new = bb_min[1]# - int(x_diff//2)
-        # if y_min_new <0:
-        #     y_min_new = 0
-        # x_max_new = bb_max[0]# + int(y_diff//2)
-        # # if x_max_new > src_img.width:
-        # #     x_max_new = src_img.width
-        # y_max_new = bb_max[1]# + int(x_diff//2)
-        # # if y_max_new > src_img.height:
-        # #     y_max_new = src_img.height
+        label_width = math.ceil(x_max-x_min)
+        label_height = math.ceil(y_max-y_min)
         
         
-        # new_bb = [(x_min_new,y_min_new),(x_max_new,y_max_new)]
-        mm=1
-    
-        while mm < 15:
-            # print(mm)
-            new_bb = bb_cal(src_img, bb_min, bb_max,mm)
-            try:
-                sq='y'
-                wind =window_calc(new_bb, src_img, sq)
-                if (wind.width < 300) and (wind.height < 300):
-                    print('min', wind, i)
-                    mm+=1
-                else:
-                    break
-            except Exception as e:
-                print (e)
-                print(new_bb)
-                print(base_name)
             
+        dst_width, dst_height = 64, 64
+        width_diff = (dst_width - label_width)//2
+        height_diff = (dst_height - label_height)//2
+        
+
+        x_min_new = bb_min[0] - width_diff    
+        y_min_new = bb_min[1] - height_diff
+        x_max_new = bb_max[0] + width_diff    
+        y_max_new = bb_max[1] + height_diff
+
+        if label_width > math.ceil(x_max_new-x_min_new):
+            x_min_new = x_min-dst_width//2
+            x_max_new = x_max+dst_width//2
+        if label_height > math.ceil(y_max_new-y_min_new):
+            y_min_new = y_min-dst_height//2
+            y_max_new = y_max+dst_height//2
+            
+        x_center = label_width//2
+        y_center = label_height//2
+        new_width = math.ceil(x_max_new-x_min_new)
+        new_height = math.ceil(y_max_new-y_min_new)
+        
+        if new_width > new_height:
+            height_diff = (new_width - new_height)//2        
+            y_min_new = y_min_new - height_diff
+            y_max_new = y_max_new + height_diff
+            
+        elif new_width < new_height:
+            width_diff = (new_height - new_width)//2
+            x_min_new = x_min_new - width_diff    
+            x_max_new = x_max_new + width_diff  
+            
+            
+        if x_max_new > src_img.width:
+            x_max_new = src_img.width
+        if y_max_new > src_img.height:
+            y_max_new = src_img.height
+        if y_min_new <0:
+            y_min_new = 0
+        if x_min_new <0:
+            x_min_new = 0
+        
+        
+        
+        max_cords = (x_max_new, y_max_new)
+        min_cords = (x_min_new, y_min_new)
+        
+        
+        new_bb = [min_cords,max_cords]
+        
+        wind =window_calc(new_bb, src_img)
         #wind =window_calc(new_bb, src_img)
         dst_trs = src_img.window_transform(wind)
         dst_crs = src_img.crs

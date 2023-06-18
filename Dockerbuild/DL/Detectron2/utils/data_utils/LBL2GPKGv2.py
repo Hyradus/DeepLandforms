@@ -15,9 +15,17 @@ import pandas as pd
 import rasterio as rio
 from rasterio.windows import Window
 import shapely.geometry as geometry
-from utils.GenUtils import get_paths
+
 from pyproj import CRS
 
+def get_paths(PATH, ixt):
+    import re
+    import fnmatch
+    #os.chdir(PATH)
+    ext='*.'+ixt
+    chkCase = re.compile(fnmatch.translate(ext), re.IGNORECASE)
+    files = [f for f in os.listdir(PATH) if chkCase.match(f)]
+    return(files)
 
 def bounding_box(points):
     x_coordinates, y_coordinates = zip(*points)
@@ -62,7 +70,9 @@ def shapesExtractor(src_name, src_size, dst_dir, dst_crs, src_file):
                 # src_img = rio.open(f'{base_name}.tiff')
                 src_img = rio.open(f'{src_dir}/{src_tiff}.tiff')
                 # dst_name = dst_dir_name+'/'+os.path.basename(src_name)+src_size+'_lbl_'+str(i)
-                dst_name = f'{dst_dir_name}/{src_file}'
+                src_name, ext = os.path.splitext(src_file)
+                suffix=f"_lbl_{i}"
+                dst_name = f'{dst_dir_name}/{src_name}{suffix}{ext}'
                 shape_dict=labelExtractor(src_dict, shapes[i], src_img, dst_name)
                 if i == 0:
                     tmp_df=gpd.GeoDataFrame(shape_dict, crs=src_img.crs)
@@ -75,6 +85,21 @@ def shapesExtractor(src_name, src_size, dst_dir, dst_crs, src_file):
         print(e)
         pass
 
+# def limitcalc(bb_min, bb_max, label_height, label_width, src_img):
+#     x_min_new = bb_min[0] - int(label_height//2)
+#     if x_min_new <0:
+#         x_min_new = 0
+#     y_min_new = bb_min[1] - int(x_diff//2)
+#     if y_min_new <0:
+#         y_min_new = 0
+#     x_max_new = bb_max[0] + int(y_diff//2)
+#     if x_max_new > src_img.width:
+#         x_max_new = src_img.width
+#     y_max_new = bb_max[1] + int(x_diff//2)
+#     if y_max_new > src_img.height:
+#         y_max_new = src_img.height
+#     return(x_min_new, y_min_new, x_max_new, y_max_new)
+
 def labelExtractor(src_dict, shape, src_img, dst_name):
 
     points = shape['points']
@@ -82,32 +107,77 @@ def labelExtractor(src_dict, shape, src_img, dst_name):
     bb = bounding_box(points)
     bb_min = bb[0]
     bb_max = bb[1]
-
+    
     x_min = bb_min[0]
     y_min = bb_min[1]
     x_max = bb_max[0]
     y_max = bb_max[1]
+    
+    label_width = math.ceil(x_max-x_min)
+    label_height = math.ceil(y_max-y_min)
+    
+    
+        
+    dst_width, dst_height = 64, 64
+    width_diff = (dst_width - label_width)//2
+    height_diff = (dst_height - label_height)//2
+    
 
-    x_diff = (x_max-x_min)
-    y_diff = (y_max-y_min)
+    x_min_new = bb_min[0] - width_diff    
+    y_min_new = bb_min[1] - height_diff
+    x_max_new = bb_max[0] + width_diff    
+    y_max_new = bb_max[1] + height_diff
 
-    x_min_new = bb_min[0] - int(y_diff//2)
-    if x_min_new <0:
-        x_min_new = 0
-    y_min_new = bb_min[1] - int(x_diff//2)
-    if y_min_new <0:
-        y_min_new = 0
-    x_max_new = bb_max[0] + int(y_diff//2)
+    if label_width > math.ceil(x_max_new-x_min_new):
+        x_min_new = x_min-dst_width//2
+        x_max_new = x_max+dst_width//2
+    if label_height > math.ceil(y_max_new-y_min_new):
+        y_min_new = y_min-dst_height//2
+        y_max_new = y_max+dst_height//2
+        
+    x_center = label_width//2
+    y_center = label_height//2
+    new_width = math.ceil(x_max_new-x_min_new)
+    new_height = math.ceil(y_max_new-y_min_new)
+    
+    if new_width > new_height:
+        height_diff = (new_width - new_height)//2        
+        y_min_new = y_min_new - height_diff
+        y_max_new = y_max_new + height_diff
+        
+    elif new_width < new_height:
+        width_diff = (new_height - new_width)//2
+        x_min_new = x_min_new - width_diff    
+        x_max_new = x_max_new + width_diff  
+        
+        
     if x_max_new > src_img.width:
         x_max_new = src_img.width
-    y_max_new = bb_max[1] + int(x_diff//2)
     if y_max_new > src_img.height:
         y_max_new = src_img.height
-
-    new_bb = [(x_min_new,y_min_new),(x_max_new,y_max_new)]
-
-
-
+    if y_min_new <0:
+        y_min_new = 0
+    if x_min_new <0:
+        x_min_new = 0
+    
+    
+    
+    max_cords = (x_max_new, y_max_new)
+    min_cords = (x_min_new, y_min_new)
+    
+    
+    new_bb = [min_cords,max_cords]
+    # x_min_new, y_min_new, x_max_new, y_max_new = limitcalc(bb_min,
+    #                                                        bb_max,
+    #                                                        y_diff,
+    #                                                        x_diff,
+    #                                                        src_img
+    #                                                        )
+    
+    # print(x_max-x_min)
+    #print('old',bb)
+    #print('new', new_bb)
+    
     wind =window_calc(new_bb, src_img)
     dst_trs = src_img.window_transform(wind)
     dst_crs = src_img.crs
@@ -139,8 +209,8 @@ def labelExtractor(src_dict, shape, src_img, dst_name):
     return ({"Name":os.path.basename(dst_name),"Type":shape['label'],"geometry":[poly]})
 
 
-src_dir = '/media/gnodj/W-DATS/2022/WorkingDataset/MarsPIT/extracted-05'
-dst_dir_name = src_dir+'/cropped'
+src_dir = '/mnt/SDATS/temp/YOLOv8/BC_n_SQCRP_n_CellSize_10_m__LIM_n_None_px_cog_n/'
+dst_dir_name = src_dir+'/extracted'
 dst_dir = os.makedirs(dst_dir_name, exist_ok=True)
 
 
@@ -148,7 +218,7 @@ src_files = get_paths(src_dir,'json')
 init_src_file=src_files[0].split('.json')[0]+'.tiff'
 #init_crs = rio.open(src_dir+'/'+init_src_file).crs
 
-ssize = 0.5
+ssize = 10.0
 dst_crs = CRS.from_wkt('GEOGCS["Mars 2000",DATUM["D_Mars_2000",SPHEROID["Mars_2000_IAU_IAG",3396190.0,169.89444722361179]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]')
 # gdf = gpd.GeoDataFrame(columns=['Name'], crs =dst_crs)
 

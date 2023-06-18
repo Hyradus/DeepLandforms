@@ -1,0 +1,34 @@
+albumentations
+colour
+
+geopandas
+holoviews
+ipywidgets
+ipykernel
+jupyterlab
+leafmap
+labelme2coco
+matplotlib
+numpy
+opencv-python
+opencv-contrib-python
+pandas
+panel
+plotly
+psutil
+rioxarray
+rasterio
+scikit-image
+scikit-learn
+scipy
+setuptools
+tensorboard
+torch>2.0.0 --index-url https://download.pytorch.org/whl/cu118
+torchvision --index-url https://download.pytorch.org/whl/cu118
+tqdm
+ultralytics
+sahi
+super-gradients
+segment-geospatial
+localtileserver
+owslib

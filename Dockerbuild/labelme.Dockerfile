@@ -38,4 +38,5 @@ RUN groupadd -g $GID -o $UNAME && \
 
 WORKDIR /home/$UNAME
 ADD /etc/.labelmerc /home/user/.labelmerc
+USER user
 #ENTRYPOINT [ "labelme" ]

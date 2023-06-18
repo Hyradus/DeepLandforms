@@ -1,28 +1,34 @@
 version: "3.8"
+
 services:
 
      deeplandforms:
-        image: deeplandforms
-        container_name: deeplandforms
+        network_mode: host
+        image: deeplandforms2
+        container_name: deeplandforms2
         init: true
+        shm_size: 32gb      
         build:
             context: ./
-            dockerfile: DeepLandforms.Dockerfile
-        shm_size: 8gb
-        env_file: ./.env
-        user: user
+            dockerfile: DeepLandforms.Dockerfile                   
+            args:
+                - UNAME=${UNAME}
+                - PASSWORD=${PASSWORD}
+                - UID=${UID}
+                - GID=${GID}
         ports:
-              - ${DL_JUPYTER_PORT}:${DL_JUPYTER_PORT}
+              - ${LABPORT}:${LABPORT}            
         volumes:
-              - ${DATA_DIR}:/home/user/data
-              - ${DL_DIR}:/home/user/DeepLandforms
+              - ${DATA_DIR}:/home/${UNAME}/data
+              - ${DL_DIR}:/home/${UNAME}/DeepLandforms
         command:
             [
                 "jupyter",
                 "lab",
                 "--ip=0.0.0.0",
                 "--no-browser",
-                "--port=${DL_JUPYTER_PORT}",
+                "--allow-root",
+                "--port=${LABPORT}",
 #                "--notebook-dir=${JUPYTER_DIR}",
             ]
         deploy:
@@ -33,7 +39,11 @@ services:
                 count: all
                 capabilities: [gpu,utility,compute]
 
+<<<<<<< HEAD
      tensorboard:
+=======
+    tensorboard:
+>>>>>>> 42e5c4e (Major rework, added new notebooks (YOLOv8))
           image: tensorboard
           container_name: tensorboard
           build:

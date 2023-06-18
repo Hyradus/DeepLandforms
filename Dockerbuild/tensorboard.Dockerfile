@@ -4,4 +4,4 @@ RUN pip3 install tensorboard
 
 WORKDIR /mnt/logdir
 EXPOSE 8686
-#ENTRYPOINT ["tensorboard", "--logdir=/mnt/logdir/", "--host=0.0.0.0", "--port=8686"]
+ENTRYPOINT ["tensorboard", "--logdir=/logdir/", "--host=0.0.0.0", "--port=8686"]
