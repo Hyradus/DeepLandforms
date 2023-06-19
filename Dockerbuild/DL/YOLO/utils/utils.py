@@ -55,7 +55,7 @@ def bboxes2df(bboxes, classes, confs, cols, data_min=0, data_max=None):
         #new_xywh.append(conf)
         data.append(data_list)
         
-        yolo_df = pd.DataFrame(data=data,columns=cols)
+    yolo_df = pd.DataFrame(data=data,columns=cols)
     yolo_df['Class']=classes
     yolo_df['Conf']=confs
     return(yolo_df)

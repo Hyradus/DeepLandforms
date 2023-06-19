@@ -52,12 +52,20 @@ The models are based on state-of-the-art general purpose architectures, availabl
 **DeepLandforms-Inference-YOLOv8.ipynb**
 
 With this notebook, users can use custom [YOLOv8](https://github.com/ultralytics/ultralytics) trained models for object detection and instance segmentation models on custom dataset of georeferenced images.
-Results can be visualized directly in the noteboo using leafmap and WMS backend.
+Results can be visualized directly in the notebook using leafmap and WMS backend.
+
+**DeepLandforms-Inference-YOLOv8-SAM.ipynb**
+
+With this notebook, users can use custom [YOLOv8](https://github.com/ultralytics/ultralytics) trained models for object detection and instance segmentation models on custom dataset of georeferenced images.
+In this version, the segmentation is performed as a second-stage, by [Segment Anything Model](https://github.com/facebookresearch/segment-anything) using the bounding boxes obtained by YOLO in the first stage.
+Results can be visualized directly in the notebook using leafmap and WMS backend.
 
 The output consist of a folder containing:
 * Crop of the detections (georeferenced)
 * Label file in YOLO txt format for object detection
-* Geopackage containing a single layer with image name, confidence leve, class.
+* Label file in COCO json format for object detection 
+* Geopackage containing a single layer with image name, confidence level, class representing the bounding-box centroids as points.
+* Geopackage containing a single layer with image name, confidence level, class representing the segmented shapes as polygons
 
 
 #### Detectron2
@@ -116,11 +124,11 @@ docker-compose up --build
 ## To-DO
 
 * [ ] Update tutorial
-* [ ] Remove nvidia-docker strict requirement
+* [X] Remove nvidia-docker strict requirement
 * [X] Remove Detectron2 and make it optional 
 * [X] Implement additional architectures (e.g. U-Net, YOLO)
 * [X] Implement Segment-Anything stage
-* [ ] Deploy Segment-Anything stage
+* [X] Deploy Segment-Anything stage
 
 ## How to Cite
 
