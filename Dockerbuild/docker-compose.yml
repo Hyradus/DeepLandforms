@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
 
-     deeplandforms:
+    deeplandforms:
         network_mode: host
         image: deeplandforms2
         container_name: deeplandforms2
@@ -28,9 +28,9 @@ services:
                 "--ip=0.0.0.0",
                 "--no-browser",
                 "--allow-root",
-                "--port=${LABPORT}",
-#                "--notebook-dir=${JUPYTER_DIR}",
+                "--port=${LABPORT}"
             ]
+
         deploy:
           resources:
             reservations:
@@ -38,7 +38,7 @@ services:
               - driver: nvidia
                 count: all
                 capabilities: [gpu,utility,compute]
-
+    
     tensorboard:
           image: tensorboard
           container_name: tensorboard
@@ -56,7 +56,7 @@ services:
                 "--port=${TENSORBOARD_PORT}",
                 "--host=0.0.0.0",
             ]
-     ipu:
+    ipu:
         image: ipu
         container_name: ipu
         init: true
@@ -76,11 +76,10 @@ services:
                 "lab",
                 "--ip=0.0.0.0",
                 "--no-browser",
-                "--port=${IPU_JUPYTER_PORT}",
-#                "--notebook-dir=${JUPYTER_DIR}",
+                "--port=${IPU_JUPYTER_PORT}"
             ]
 
-     labelme:
+    labelme:
         image: labelme
         container_name: labelme
         build:
