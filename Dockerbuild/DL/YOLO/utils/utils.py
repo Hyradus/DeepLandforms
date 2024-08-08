@@ -101,7 +101,7 @@ def box2geotiff(bbox, img, dst_dir, image_name, ext, cls, i):
               transform=dst_trs,
               crs=dst_crs) as dst:
         dst.write(w)
-        return(w)
+        return(dst_name)
                   
 def box2sam(predictor, image, bbox, img_crs, conf, cls):
     img = rio.open(image)
@@ -119,27 +119,29 @@ def box2sam(predictor, image, bbox, img_crs, conf, cls):
     'Class':[cls],
     'Conf':[conf]
     }
-    geometry = mask2shape(masks[0], img.transform)
-    binary_image = np.uint8(masks[0]) * 255
-    contours , _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
-    outer_contour = contours[0]
-    exterior_coordinates = outer_contour.squeeze().tolist()
-
-    #cnt_msk_flip = np.flip(cnt_msk[0], axis=1)
-    #segment = cnt_msk_flip.tolist()
-    shape_dict = {
-                "label": cls,
-                "points": exterior_coordinates,
-                "group_id": None,
-                "shape_type": "polygon",
-                "flags": {}
-                }
+    try:
+        geometry = mask2shape(masks[0], img.transform)
+        binary_image = np.uint8(masks[0]) * 255
+        contours , _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+        outer_contour = contours[0]
+        exterior_coordinates = outer_contour.squeeze().tolist()
     
-    return(gpd.GeoDataFrame(data=shp_data, geometry= [geometry], crs = img_crs), shape_dict)
+        #cnt_msk_flip = np.flip(cnt_msk[0], axis=1)
+        #segment = cnt_msk_flip.tolist()
+        shape_dict = {
+                    "label": cls,
+                    "points": exterior_coordinates,
+                    "group_id": None,
+                    "shape_type": "polygon",
+                    "flags": {}
+                    }
+        
+        return(gpd.GeoDataFrame(data=shp_data, geometry= [geometry], crs = img_crs), shape_dict)
+    except Exception as e:
+        print(e)
 
-
-def PlotMap(geo_points):
+def PlotMap(body):
     from localtileserver import TileClient, get_leaflet_tile_layer, examples
     from ipyleaflet import Map
     import rasterio as rio
@@ -150,13 +152,13 @@ def PlotMap(geo_points):
     
     #import leafmap.foliumap as leafmap
     wms_url='https://explore.jacobs-university.de/geoserver/ows?service=WMS'
-    layers='Mars_Viking_MDIM21_ClrMosaic_global_232m_crs',
+    layers='Mars_Viking_MDIM21_ClrMosaic_global_232m-cog',
     wms = WebMapService(
         url=wms_url,
         version='1.3.0'
     )
-    body='Mars'
-    my_projection = {
+    
+    mars_projection = {
         "name": "EPSG:104905",
         "custom": True,  # This is important, it tells ipyleaflet that this projection is not on the predefined ones.
         #"proj4def": "+proj=longlat +a=3396190 +rf=169.894447223612 +no_defs +type=crs",
@@ -165,12 +167,23 @@ def PlotMap(geo_points):
         "bounds": [[-180, -90], [180, 90]],
         "resolutions": [8192.0, 4096.0, 2048.0, 1024.0, 512.0, 256.0],
     }
+    moon_projection = {
+        "name": "EPSG:104903",
+        "custom": True,  # This is important, it tells ipyleaflet that this projection is not on the predefined ones.
+        #"proj4def": "+proj=longlat +a=3396190 +rf=169.894447223612 +no_defs +type=crs",
+        "proj4def": "+proj=longlat +R=1737400  +no_defs +type=crs",
+        "origin": [0, 0],
+        "bounds": [[-180, -90], [180, 90]],
+        "resolutions": [8192.0, 4096.0, 2048.0, 1024.0, 512.0, 256.0],
+    }
     wms_layers = list(wms.contents)
     
     if body=='Mars':
-        baselayer='Mars:Mars_Viking_MDIM21_ClrMosaic_global_232m_crs_cog'
+        baselayer='Mars_Viking_MDIM21_ClrMosaic_global_232m-cog'
+        my_projection=mars_projection
     if body=='Moon':
-        'Moon:Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013-104903-cog'
+        baselayer='Moon:Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013-104903-cog'
+        my_projection=moon_projection
     idx = wms_layers.index(baselayer)
     wms_layer = WMSLayer(url=wms_url, layers=wms_layers[idx], format='image/png', max_zoom=14, min_zoom=2,   crs=my_projection, tiles=True)
     # Create a TileClient from a raster file
@@ -198,6 +211,5 @@ def PlotMap(geo_points):
         "fill": True,
     }
     #map_select.set_view([(image.bounds.left, image.bounds.bottom), (image.bounds.right, image.bounds.top)])
-    geo_points.crs = "EPSG:4326"
-    map_select.add_gdf(geo_points,layer_name='PointsDetections',fill_colors=["red", "green", "blue"],style = style,)
+    
     return(map_select)

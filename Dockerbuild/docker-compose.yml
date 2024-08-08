@@ -1,97 +1,83 @@
 version: "3.8"
 
 services:
+  deeplandforms:
+    hostname: ${HOSTNAME}
+    image: deeplandforms
+    container_name: deeplandforms
+    init: true
+    shm_size: 32gb
+    network_mode: "host"
+    build:
+      context: ./
+      dockerfile: DeepLandforms.Dockerfile
+      args:
+        - UNAME=${UNAME}
+        - PASSWORD=${PASSWORD}
+        - UID=${UID}
+        - GID=${GID}
+        - LABPORT=${LABPORT}
+    ports:
+      - "${LABPORT}:${LABPORT}"
+      - "5006:5006"
+      - "6006:6006"  # TensorBoard port
+    volumes:
+      - ${DATA_DIR}:/home/${UNAME}/data
+      - ${DL_DIR}:/home/${UNAME}/DeepLandforms
+    environment:
+      - UNAME=${UNAME}
+      - UID=${UID}
+      - GID=${GID}
+      - PASSWORD=${PASSWORD}
+      - LABPORT=${LABPORT}
+    command:
+      bash -c "jupyter lab --ip=0.0.0.0 --no-browser --allow-root --port=${LABPORT} & tensorboard --logdir=/home/${UNAME}/data/logs --port=6006 --host=0.0.0.0"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility, compute]
 
-    deeplandforms:
-        network_mode: host
-        image: deeplandforms2
-        container_name: deeplandforms2
-        init: true
-        shm_size: 32gb      
-        build:
-            context: ./
-            dockerfile: DeepLandforms.Dockerfile                   
-            args:
-                - UNAME=${UNAME}
-                - PASSWORD=${PASSWORD}
-                - UID=${UID}
-                - GID=${GID}
-        ports:
-              - ${LABPORT}:${LABPORT}            
-        volumes:
-              - ${DATA_DIR}:/home/${UNAME}/data
-              - ${DL_DIR}:/home/${UNAME}/DeepLandforms
-        command:
-            [
-                "jupyter",
-                "lab",
-                "--ip=0.0.0.0",
-                "--no-browser",
-                "--allow-root",
-                "--port=${LABPORT}"
-            ]
+  ipu:
+    hostname: ${HOSTNAME}
+    image: hyradus/ipu:latest
+    container_name: ipu
+    init: true
+    environment:
+      - NB_USER=${UNAME}
+      - NB_UID=${UID}
+      - NB_GID=${GID}
+      - CHOWN_HOME=yes
+      - CHOWN_HOME_OPTS="-R"
+    ports:
+      - ${IPU_JUPYTER_PORT}:${IPU_JUPYTER_PORT}
+    volumes:
+      - ${IPU_DIR}:/home/${UNAME}/IPU
+      - ${DATA_DIR}:/home/${UNAME}/data
+    command:
+      [
+        "jupyter",
+        "lab",
+        "--ip=0.0.0.0",
+        "--no-browser",
+        "--port=${IPU_JUPYTER_PORT}"
+      ]
 
-        deploy:
-          resources:
-            reservations:
-              devices:
-              - driver: nvidia
-                count: all
-                capabilities: [gpu,utility,compute]
-    
-    tensorboard:
-          image: tensorboard
-          container_name: tensorboard
-          build:
-               context: ./
-               dockerfile: tensorboard.Dockerfile
-          ports:
-               - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
-          volumes:
-               - ${DATA_DIR}/:/data
-          command:
-            [
-                "tensorboard",
-                "--logdir=/data/train/logdir",
-                "--port=${TENSORBOARD_PORT}",
-                "--host=0.0.0.0",
-            ]
-    ipu:
-        image: ipu
-        container_name: ipu
-        init: true
-        build:
-            context: ./
-            dockerfile: IPU.Dockerfile
-        env_file: ./.env
-        user: jovyan
-        ports:
-              - ${IPU_JUPYTER_PORT}:${IPU_JUPYTER_PORT}
-        volumes:
-              - ${IPU_DIR}:/home/jovyan/IPU
-              - ${DATA_DIR}:/home/jovyan/data
-        command:
-            [
-                "jupyter",
-                "lab",
-                "--ip=0.0.0.0",
-                "--no-browser",
-                "--port=${IPU_JUPYTER_PORT}"
-            ]
-
-    labelme:
-        image: labelme
-        container_name: labelme
-        build:
-             context: ./
-             dockerfile: labelme.Dockerfile
-        user: user
-        environment:
-               - DISPLAY=${DISPLAY}
-        volumes:
-               - ${DATA_DIR}:/home/user/data
-               - /tmp/.X11-unix:/tmp/.X11-unix
-               - ~/.Xauthority:/home/user/.Xauthority
-        network_mode: "host"
-        command:
-            ["labelme"]
+  labelme:
+    image: labelme
+    container_name: labelme
+    build:
+      context: ./
+      dockerfile: labelme.Dockerfile
+    user: user
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ${DATA_DIR}:/home/user/data
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/home/user/.Xauthority
+    network_mode: "host"
+    command:
+      ["labelme"]
